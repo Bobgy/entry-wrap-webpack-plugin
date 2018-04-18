@@ -16,7 +16,12 @@ EntryWrap.prototype.apply = function(compiler) {
     compiler.plugin('compilation', function(compilation) {
         compilation.plugin('optimize-chunk-assets', function(chunks, callback) {
             chunks.forEach(function(chunk) {
-                if(!chunk.isInitial()) return;
+                // for webpack 2, 3 compatibility
+                if (typeof chunk.isInitial === 'function') {
+                    if (!chunk.isInitial()) return;
+                } else { // for webpack 4
+                    if (!chunk.canBeInitial()) return;
+                }
                 chunk.files.filter(ModuleFilenameHelpers.matchObject.bind(undefined, options)).forEach(function(file) {
                     compilation.assets[file] = new ConcatSource(before, '\n', compilation.assets[file], '\n', after);
                 });
